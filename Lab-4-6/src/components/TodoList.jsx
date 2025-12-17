@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useTodos } from "../hooks/useTodos";
 import TodoItem from "./TodoItem";
 import SearchBar from "./SearchBar";
@@ -8,18 +9,30 @@ export default function TodoList() {
     todos,
     isLoading,
     error,
-
     searchTerm,
     setSearchTerm,
-
     currentPage,
     limitPerPage,
     totalTodos,
     goToNextPage,
     goToPrevPage,
-
     editTodoTitle,
+    deleteTodo,
   } = useTodos();
+
+  const handleEdit = useCallback(
+    (id, title) => {
+      editTodoTitle(id, title);
+    },
+    [editTodoTitle]
+  );
+
+  const handleDelete = useCallback(
+    (id) => {
+      deleteTodo(id);
+    },
+    [deleteTodo]
+  );
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -27,19 +40,17 @@ export default function TodoList() {
   return (
     <>
       <h1>Todo List</h1>
-
       <SearchBar value={searchTerm} onChange={setSearchTerm} />
-
       <ul>
         {todos.map((todo) => (
           <TodoItem
             key={todo.id}
             todo={todo}
-            onEdit={editTodoTitle}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         ))}
       </ul>
-
       <Pagination
         currentPage={currentPage}
         totalTodos={totalTodos}

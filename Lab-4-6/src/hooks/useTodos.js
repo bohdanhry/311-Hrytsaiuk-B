@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 
 const API_URL = "https://dummyjson.com/todos";
 
 export function useTodos() {
-  const [todos, setTodos] = useState([]);
   const [allTodos, setAllTodos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,8 +21,6 @@ export function useTodos() {
           `${API_URL}?limit=${limitPerPage}&skip=${skip}`
         );
         const data = await res.json();
-
-        setTodos(data.todos);
         setAllTodos(data.todos);
         setTotalTodos(data.total);
       } catch (err) {
@@ -36,50 +33,40 @@ export function useTodos() {
     fetchTodos();
   }, [currentPage, limitPerPage]);
 
-  useEffect(() => {
-    if (!searchTerm) {
-      setTodos(allTodos);
-    } else {
-      setTodos(
-        allTodos.filter((todo) =>
-          todo.todo.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    }
-  }, [searchTerm, allTodos]);
+  const todos = useMemo(() => {
+    if (!searchTerm) return allTodos;
+    return allTodos.filter((todo) =>
+      todo.todo.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allTodos, searchTerm]);
 
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     if (currentPage * limitPerPage < totalTodos) {
       setCurrentPage((p) => p + 1);
     }
-  };
+  }, [currentPage, limitPerPage, totalTodos]);
 
-  const goToPrevPage = () => {
+  const goToPrevPage = useCallback(() => {
     if (currentPage > 1) {
       setCurrentPage((p) => p - 1);
     }
-  };
+  }, [currentPage]);
 
-  const setLimit = (limit) => {
+  const setLimit = useCallback((limit) => {
     setLimitPerPage(limit);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const editTodoTitle = async (id, newTitle) => {
+  const editTodoTitle = useCallback(async (id, newTitle) => {
     try {
       setIsLoading(true);
-
       const res = await fetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ todo: newTitle }),
       });
-
       if (!res.ok) throw new Error("Edit failed");
 
-      setTodos((prev) =>
-        prev.map((t) => (t.id === id ? { ...t, todo: newTitle } : t))
-      );
       setAllTodos((prev) =>
         prev.map((t) => (t.id === id ? { ...t, todo: newTitle } : t))
       );
@@ -88,7 +75,23 @@ export function useTodos() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const deleteTodo = useCallback(async (id) => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Delete failed");
+
+      setAllTodos((prev) => prev.filter((todo) => todo.id !== id));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return {
     todos,
@@ -104,7 +107,8 @@ export function useTodos() {
     goToNextPage,
     goToPrevPage,
     setLimit,
-
+   
     editTodoTitle,
+    deleteTodo,
   };
 }

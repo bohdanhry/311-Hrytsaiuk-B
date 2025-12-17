@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 
-export default function TodoItem({ todo, onEdit }) {
+function TodoItem({ todo, onEdit, onDelete }) {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(todo.todo);
 
@@ -20,12 +20,14 @@ export default function TodoItem({ todo, onEdit }) {
       ) : (
         <span>{todo.todo}</span>
       )}
-
       {isEditing ? (
         <button onClick={save}>Save</button>
       ) : (
         <button onClick={() => setIsEditing(true)}>Edit</button>
       )}
+      <button onClick={() => onDelete(todo.id)}>Delete</button>
     </li>
   );
 }
+
+export default memo(TodoItem);
