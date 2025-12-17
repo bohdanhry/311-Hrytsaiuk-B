@@ -15,9 +15,24 @@ The React Compiler is not enabled on this template because of its impact on dev 
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
-## Expanding the ESLint configuration
+## Component Tree
 
-App
- └── TodoList
-      ├── useTodos (custom hook)
-      └── TodoItem (xN)
+App  
+└── TodoList  
+    ├── SearchBar  
+    ├── TodoItem  
+    └── Pagination  
+
+## Data Flow
+
+- useTodos holds all data and logic
+- Data flows down via props
+- Events flow up via callbacks
+
+## Used React Design Patterns
+
+- Custom Hooks
+- Container / Presentational Components
+- Composition over Inheritance
+- State Colocation
+- Unidirectional Data Flow
